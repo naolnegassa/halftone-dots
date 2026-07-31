@@ -179,8 +179,8 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Script
-          src="https://stats.harshsingh.me/script.js"
-          data-website-id="49095c71-f96e-4fc1-89d7-3d94cc7039e4"
+          src="https://admin.harshsingh.me/script.js"
+          data-website-id="e7dfd2c1-8964-45f8-b818-4c711acb1223"
           strategy="afterInteractive"
         />
         {children}
