@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { LoomixPlayer } from "loomix";
+import { SlidingTabs } from "./sliding-tabs";
 
 const TABS = [
   { id: "default", label: "Default" },
@@ -27,7 +28,7 @@ function PlayerStage({ active }: { active: TabId }) {
           captions={[
             { src: "/kyrgyzstan.vtt", srcLang: "en", label: "English" },
           ]}
-          className="aspect-video w-full rounded-none!"
+          className="rounded-none! border-x-0!"
         />
       );
     case "minimal":
@@ -40,11 +41,11 @@ function PlayerStage({ active }: { active: TabId }) {
           disableSpeed
           disablePictureInPicture
           disableFullscreen
-          className="aspect-video w-full rounded-none!"
+          className="rounded-none! border-x-0!"
         />
       );
     case "loading":
-      return <LoomixPlayer loading className="aspect-video w-full rounded-none!" />;
+      return <LoomixPlayer loading className="rounded-none! border-x-0!" />;
     case "modal":
       return <ModalStage />;
     default: {
@@ -67,7 +68,7 @@ function ModalStage() {
   }, [open]);
 
   return (
-    <div className="relative flex aspect-video w-full items-center justify-center bg-neutral-900">
+    <div className="relative flex aspect-video w-full items-center justify-center border-y bg-neutral-900">
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -97,7 +98,9 @@ function ModalStage() {
               exit={{ scale: 0.96, opacity: 0 }}
               transition={{ duration: 0.25, ease: "easeOut" }}
               onClick={(event) => event.stopPropagation()}
-              className="w-full"
+              // Rounded to the player's own radius so the shadow follows its
+              // corners instead of squaring them off from behind.
+              className="w-full rounded-xl"
               style={{
                 maxWidth: "min(1280px, 92vw)",
                 boxShadow: "0 30px 80px rgba(0,0,0,0.55)",
@@ -111,7 +114,9 @@ function ModalStage() {
                 autoPlay
                 autoFocus
                 onClose={() => setOpen(false)}
-                className="aspect-video max-h-[86vh] w-full rounded-[14px]"
+                // The page's hairline is for a light ground; over the dark
+                // backdrop it reads as a white ring.
+                className="max-h-[86vh] border-white/10"
               />
             </motion.div>
           </motion.div>
@@ -127,45 +132,18 @@ export function PlayerDemo() {
   return (
     <section aria-label="Player demo" className="mt-12">
       <div className="mx-2.5 mb-3 px-1.5">
-        <div
-          role="tablist"
-          aria-label="Player examples"
-          className="relative inline-flex p-1"
-        >
-          {TABS.map((tab) => {
-            const isActive = tab.id === active;
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                type="button"
-                aria-selected={isActive}
-                onClick={() => setActive(tab.id)}
-                className="relative h-8 cursor-pointer rounded-full px-3 text-sm whitespace-nowrap transition-colors duration-150"
-              >
-                {isActive && (
-                  <motion.span
-                    layoutId="player-tab-pill"
-                    className="absolute inset-0 rounded-full bg-[var(--color-ink)]"
-                    transition={{ type: "spring", stiffness: 480, damping: 40 }}
-                  />
-                )}
-                <span
-                  className={`relative z-10 ${
-                    isActive ? "text-white" : "text-[var(--color-ink)]"
-                  }`}
-                >
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <SlidingTabs
+          ariaLabel="Player examples"
+          tabs={TABS.map((tab) => ({ id: tab.id, label: tab.label }))}
+          value={active}
+          onChange={setActive}
+          className="p-1 text-sm"
+          pillClassName="bg-[var(--color-ink)]"
+          tabClassName="h-8 px-3"
+        />
       </div>
 
-      <div className="border-y border-[var(--color-hair)]">
-        <PlayerStage active={active} />
-      </div>
+      <PlayerStage active={active} />
     </section>
   );
 }

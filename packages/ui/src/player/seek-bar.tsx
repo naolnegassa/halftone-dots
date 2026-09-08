@@ -80,13 +80,23 @@ export function SeekBar({
 
       {hoverPercent !== null && duration > 0 && (
         <div
-          className="pointer-events-none absolute -translate-x-1/2 whitespace-nowrap text-[12px] tabular-nums"
+          className="pointer-events-none absolute -translate-x-1/2 font-mono whitespace-nowrap text-[12px] tabular-nums"
           style={{
             left: `${hoverPercent * 100}%`,
             bottom: "calc(100% + 8px)",
           }}
+          // Centred on the pointer, the label runs past the track at either
+          // end and the player's frame clips it. Clamp it to the track once
+          // its width is known; the ref runs after each render's styles.
+          ref={(el) => {
+            const track = el?.offsetParent;
+            if (!el || !track) return;
+            const half = el.offsetWidth / 2;
+            const x = hoverPercent * track.clientWidth;
+            el.style.left = `${Math.min(Math.max(x, half), track.clientWidth - half)}px`;
+          }}
         >
-          <span className="font-semibold text-white">
+          <span className="text-white">
             {formatTime(hoverPercent * duration)}
           </span>
           <span className="text-white/45"> / {formatTime(duration)}</span>

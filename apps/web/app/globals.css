@@ -10,6 +10,8 @@
     "Helvetica Neue", Arial, sans-serif;
   --font-mono: var(--font-fira-code), ui-monospace, monospace;
   --ease-strong-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --tabs-duration: 250ms;
+  --tabs-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
   --color-page: #f6f6f6;
   --color-ink: #1a1a1a;
@@ -40,6 +42,14 @@
     --icon-swap-ease: ease-in-out;
   }
 
+  /* A bare `border` takes the page's hairline colour rather than
+     `currentColor`, so the player's default frame matches the rules around it. */
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-hair);
+  }
+
   html {
     scroll-behavior: smooth;
   }
@@ -57,6 +67,27 @@
   ::selection {
     background: var(--color-accent);
     color: #fff;
+  }
+}
+
+/* Sliding tabs: the pill and the clip on the active label move on the same
+   duration and curve, so the colour change rides the pill's edge. */
+.sliding-tab-pill {
+  transition:
+    transform var(--tabs-duration) var(--tabs-ease),
+    width var(--tabs-duration) var(--tabs-ease);
+  will-change: transform, width;
+}
+
+.sliding-tab-active-label {
+  transition: clip-path var(--tabs-duration) var(--tabs-ease);
+  will-change: clip-path;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sliding-tab-pill,
+  .sliding-tab-active-label {
+    transition: none;
   }
 }
 

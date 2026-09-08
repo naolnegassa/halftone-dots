@@ -15,6 +15,7 @@ import {
 import { CaptionsIcon } from "./player/captions-icon";
 import { CenterControls } from "./player/center-controls";
 import { ControlButton } from "./player/control-button";
+import { useGlassControls } from "./player/glass-controls";
 import { useHasHover, useIsMdUp, useTriggerRect } from "./player/hooks";
 import { useLiquidGlass } from "./player/liquid-glass";
 import { LoadingSkeleton } from "./player/loading-skeleton";
@@ -36,6 +37,13 @@ export type { LoomixCaption, LoomixPlayerProps };
  *
  * It is styled with Tailwind and animates with `motion`. The component is
  * self-contained: drop it into any layout and pass a `src`.
+ *
+ * Three defaults are the three things a bare player gets wrong in a page: a
+ * ratio, so it reserves its space before the first frame arrives rather than
+ * jumping the layout when the metadata lands; a radius and border, so it sits
+ * in a page of cards as one of them; and `overflow-hidden`, without which the
+ * player's own chrome squares off the corners this rounds. Every one is a
+ * class a caller can override through `className`.
  */
 export function LoomixPlayer({
   src,
@@ -71,6 +79,7 @@ export function LoomixPlayer({
     disableFullscreen;
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const videoRef = React.useRef<HTMLVideoElement | null>(null);
+  const centerLayerRef = React.useRef<HTMLDivElement | null>(null);
   const hideTimerRef = React.useRef<number | null>(null);
   const speedTriggerRef = React.useRef<HTMLDivElement | null>(null);
   const speedPopoverRef = React.useRef<HTMLDivElement | null>(null);
@@ -86,6 +95,12 @@ export function LoomixPlayer({
   // scale with the element.
   const playGlass = useLiquidGlass(isMdUp ? 88 : 64);
   const skipGlass = useLiquidGlass(isMdUp ? 66 : 48);
+  // WebGL liquid glass under the centre buttons, with the SVG filters above as
+  // the fallback until it runs (and for good where it cannot).
+  const glass = useGlassControls(
+    { root: containerRef, video: videoRef, layer: centerLayerRef },
+    [src, disableSkip, loading],
+  );
   const reactId = React.useId();
   const glassFilterId = `loomix-glass-${reactId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [portalMounted, setPortalMounted] = React.useState(false);
@@ -240,6 +255,19 @@ export function LoomixPlayer({
     onPlayingChange?.(isPlaying);
   }, [isPlaying, onPlayingChange]);
 
+  // Under SSR the <video> is in the served HTML and starts loading before
+  // hydration, so `loadedmetadata` (and an autoplay's `play`) can fire before
+  // React attaches its handlers. Seed both from the element rather than
+  // reading 0:00 and "paused" for the rest of the session.
+  React.useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.readyState >= HTMLMediaElement.HAVE_METADATA) {
+      setDuration(Number.isFinite(video.duration) ? video.duration : 0);
+    }
+    setIsPlaying(!video.paused);
+  }, [src]);
+
   React.useEffect(() => {
     const handler = () => {
       const fsEl = document.fullscreenElement;
@@ -337,7 +365,10 @@ export function LoomixPlayer({
     }
     // iPhone Safari only exposes fullscreen on the <video> element via the
     // legacy webkit API, so fall back to that.
-    if (webkitVideo && typeof webkitVideo.webkitEnterFullscreen === "function") {
+    if (
+      webkitVideo &&
+      typeof webkitVideo.webkitEnterFullscreen === "function"
+    ) {
       try {
         if (webkitVideo.webkitDisplayingFullscreen) {
           webkitVideo.webkitExitFullscreen?.();
@@ -443,7 +474,7 @@ export function LoomixPlayer({
         if (!controlsLocked) setShowControls(false);
       }}
       className={cn(
-        "group/loomix relative isolate overflow-hidden rounded-[14px] bg-black text-white outline-none focus-visible:ring-2 focus-visible:ring-white/50",
+        "group/loomix relative isolate aspect-video w-full overflow-hidden rounded-xl border bg-black text-white outline-none focus-visible:ring-2 focus-visible:ring-white/50",
         className,
       )}
     >
@@ -464,6 +495,9 @@ export function LoomixPlayer({
         onLoadedMetadata={(event) => {
           setDuration(event.currentTarget.duration || 0);
           event.currentTarget.playbackRate = speed;
+        }}
+        onDurationChange={(event) => {
+          setDuration(event.currentTarget.duration || 0);
         }}
         onProgress={(event) => {
           const video = event.currentTarget;
@@ -497,6 +531,8 @@ export function LoomixPlayer({
         isPlaying={isPlaying}
         disableSkip={disableSkip}
         isMdUp={isMdUp}
+        glass={glass}
+        layerRef={centerLayerRef}
         glassFilterId={glassFilterId}
         playGlass={playGlass}
         skipGlass={skipGlass}
@@ -521,7 +557,9 @@ export function LoomixPlayer({
             transition={{ duration: 0.22, ease: EASE }}
             className={cn(
               "pointer-events-none absolute inset-x-0 bottom-0 z-10 px-3 pb-3",
-              inlineControls ? "flex items-center gap-2" : "flex flex-col gap-2",
+              inlineControls
+                ? "flex items-center gap-2"
+                : "flex flex-col gap-2",
             )}
           >
             <div
@@ -539,7 +577,10 @@ export function LoomixPlayer({
                   onClick={togglePlay}
                   label={isPlaying ? "Pause" : "Play"}
                 >
-                  <PlayPauseIcon isPlaying={isPlaying} className="size-[18px]" />
+                  <PlayPauseIcon
+                    isPlaying={isPlaying}
+                    className="size-[18px]"
+                  />
                 </ControlButton>
               </div>
             )}
@@ -570,7 +611,10 @@ export function LoomixPlayer({
                   onClick={togglePlay}
                   label={isPlaying ? "Pause" : "Play"}
                 >
-                  <PlayPauseIcon isPlaying={isPlaying} className="size-[18px]" />
+                  <PlayPauseIcon
+                    isPlaying={isPlaying}
+                    className="size-[18px]"
+                  />
                 </ControlButton>
 
                 {!disableVolume && (

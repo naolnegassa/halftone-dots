@@ -11,7 +11,9 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   treeshake: true,
-  splitting: false,
+  // The liquid-glass shader is `import()`ed only once a player mounts on the
+  // client; splitting keeps it a separate chunk so that stays lazy downstream.
+  splitting: true,
   external: ["react", "react-dom"],
   // esbuild's bundler strips module-level `"use client"` directives, so we
   // re-prepend the directive to the final outputs after the build. Without

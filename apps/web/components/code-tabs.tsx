@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { highlight } from "sugar-high";
+import { SlidingTabs } from "./sliding-tabs";
 
 type Tab = {
   id: string;
@@ -22,7 +23,7 @@ export default function Demo() {
     <LoomixPlayer
       src="/video.mp4"
       poster="/poster.jpg"
-      className="aspect-video w-full"
+      className="max-w-4xl"
     />
   );
 }`,
@@ -97,44 +98,15 @@ export function CodeTabs() {
   return (
     <section className="mt-12">
       <div className="mx-2.5 mb-0 flex flex-col items-start justify-between gap-4 px-1.5 sm:flex-row sm:items-center sm:gap-0">
-        <div
-          role="tablist"
-          aria-label="Code examples"
-          className="relative inline-flex p-1"
-        >
-          {TABS.map((tab) => {
-            const isActive = tab.id === activeId;
-            return (
-              <button
-                key={tab.id}
-                role="tab"
-                type="button"
-                aria-selected={isActive}
-                onClick={() => setActiveId(tab.id)}
-                className="relative h-8 cursor-pointer rounded-full px-3 text-sm whitespace-nowrap transition-colors duration-150"
-              >
-                {isActive && (
-                  <motion.span
-                    layoutId="tab-pill"
-                    className="absolute inset-0 rounded-full bg-[var(--color-ink)]"
-                    transition={{
-                      type: "spring",
-                      stiffness: 480,
-                      damping: 40,
-                    }}
-                  />
-                )}
-                <span
-                  className={`relative z-10 ${
-                    isActive ? "text-white" : "text-[var(--color-ink)]"
-                  }`}
-                >
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <SlidingTabs
+          ariaLabel="Code examples"
+          tabs={TABS.map((tab) => ({ id: tab.id, label: tab.label }))}
+          value={activeId}
+          onChange={setActiveId}
+          className="p-1 text-sm"
+          pillClassName="bg-[var(--color-ink)]"
+          tabClassName="h-8 px-3"
+        />
 
         <button
           type="button"

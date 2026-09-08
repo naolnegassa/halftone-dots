@@ -54,7 +54,7 @@ export default function Demo() {
     <LoomixPlayer
       src="/video.webm"
       youtubeUrl="https://youtu.be/dQw4w9WgXcQ"
-      className="aspect-video w-full max-w-4xl"
+      className="max-w-4xl"
     />
   );
 }
