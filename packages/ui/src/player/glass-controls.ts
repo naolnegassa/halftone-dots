@@ -613,6 +613,11 @@ export async function attachGlassControls(
        before they are back. */
     if (clusterAlpha() === 0) return;
 
+    /* Mid-seek, `currentTime` already says where the video is going while
+       `drawImage` still copies where it was. A reading taken then is of the
+       old picture, and on a paused video it would be kept as the reading for
+       the new one. Wait for the frame to land. */
+    if (video.seeking) return;
     /* A paused video keeps showing the same frame, so once it has been read
        there is nothing to read again until it moves. */
     if (video.paused && video.currentTime === sampledFrame) return;
