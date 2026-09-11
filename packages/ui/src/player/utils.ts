@@ -16,6 +16,8 @@ export function formatTime(seconds: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
 
-export function cn(...values: Array<string | false | null | undefined>): string {
+export function cn(
+  ...values: Array<string | false | null | undefined>
+): string {
   return values.filter(Boolean).join(" ");
 }

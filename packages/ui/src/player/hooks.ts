@@ -19,19 +19,6 @@ export function useHasHover(): boolean {
   return hasHover;
 }
 
-/** `true` once the viewport is at or above Tailwind's `md` breakpoint (768px). */
-export function useIsMdUp(): boolean {
-  const [isMdUp, setIsMdUp] = React.useState(false);
-  React.useEffect(() => {
-    const mq = window.matchMedia("(min-width: 768px)");
-    setIsMdUp(mq.matches);
-    const onChange = (event: MediaQueryListEvent) => setIsMdUp(event.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return isMdUp;
-}
-
 /**
  * Tracks the bounding rect of `ref` while `open` is true, updating on resize and
  * scroll so portaled popovers can follow their trigger.

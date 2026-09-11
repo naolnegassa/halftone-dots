@@ -28,7 +28,7 @@ var DEFAULTS = {
   shadowOffsetY: 1,
   floating: false,
   button: false,
-  bevelMode: 0
+  bevelMode: 0,
 };
 var BLUR_ITERATIONS = 6;
 var SHADOW_PAD = 20;
@@ -57,10 +57,9 @@ function resolveUrl(url, baseUrl) {
 }
 var uuid = /* @__PURE__ */ (() => {
   let counter = 0;
-  const random = () => (
+  const random = () =>
     // eslint-disable-next-line no-bitwise
-    `0000${(Math.random() * 36 ** 4 << 0).toString(36)}`.slice(-4)
-  );
+    `0000${((Math.random() * 36 ** 4) << 0).toString(36)}`.slice(-4);
   return () => {
     counter += 1;
     return `u${random()}${counter}`;
@@ -110,9 +109,11 @@ function getPixelRatio() {
   let FINAL_PROCESS;
   try {
     FINAL_PROCESS = process;
-  } catch (e) {
-  }
-  const val = FINAL_PROCESS && FINAL_PROCESS.env ? FINAL_PROCESS.env.devicePixelRatio : null;
+  } catch (e) {}
+  const val =
+    FINAL_PROCESS && FINAL_PROCESS.env
+      ? FINAL_PROCESS.env.devicePixelRatio
+      : null;
   if (val) {
     ratio = parseInt(val, 10);
     if (Number.isNaN(ratio)) {
@@ -123,8 +124,14 @@ function getPixelRatio() {
 }
 var canvasDimensionLimit = 16384;
 function checkCanvasDimensions(canvas) {
-  if (canvas.width > canvasDimensionLimit || canvas.height > canvasDimensionLimit) {
-    if (canvas.width > canvasDimensionLimit && canvas.height > canvasDimensionLimit) {
+  if (
+    canvas.width > canvasDimensionLimit ||
+    canvas.height > canvasDimensionLimit
+  ) {
+    if (
+      canvas.width > canvasDimensionLimit &&
+      canvas.height > canvasDimensionLimit
+    ) {
       if (canvas.width > canvas.height) {
         canvas.height *= canvasDimensionLimit / canvas.width;
         canvas.width = canvasDimensionLimit;
@@ -156,7 +163,10 @@ function createImage(url) {
   });
 }
 async function svgToDataURL(svg) {
-  return Promise.resolve().then(() => new XMLSerializer().serializeToString(svg)).then(encodeURIComponent).then((html) => `data:image/svg+xml;charset=utf-8,${html}`);
+  return Promise.resolve()
+    .then(() => new XMLSerializer().serializeToString(svg))
+    .then(encodeURIComponent)
+    .then((html) => `data:image/svg+xml;charset=utf-8,${html}`);
 }
 async function nodeToDataURL(node, width, height) {
   const xmlns = "http://www.w3.org/2000/svg";
@@ -175,12 +185,13 @@ async function nodeToDataURL(node, width, height) {
   return svgToDataURL(svg);
 }
 var isInstanceOfElement = (node, instance) => {
-  if (node instanceof instance)
-    return true;
+  if (node instanceof instance) return true;
   const nodePrototype = Object.getPrototypeOf(node);
-  if (nodePrototype === null)
-    return false;
-  return nodePrototype.constructor.name === instance.name || isInstanceOfElement(nodePrototype, instance);
+  if (nodePrototype === null) return false;
+  return (
+    nodePrototype.constructor.name === instance.name ||
+    isInstanceOfElement(nodePrototype, instance)
+  );
 };
 
 // node_modules/html-to-image/es/clone-pseudos.js
@@ -189,15 +200,19 @@ function formatCSSText(style) {
   return `${style.cssText} content: '${content.replace(/'|"/g, "")}';`;
 }
 function formatCSSProperties(style, options) {
-  return getStyleProperties(options).map((name) => {
-    const value = style.getPropertyValue(name);
-    const priority = style.getPropertyPriority(name);
-    return `${name}: ${value}${priority ? " !important" : ""};`;
-  }).join(" ");
+  return getStyleProperties(options)
+    .map((name) => {
+      const value = style.getPropertyValue(name);
+      const priority = style.getPropertyPriority(name);
+      return `${name}: ${value}${priority ? " !important" : ""};`;
+    })
+    .join(" ");
 }
 function getPseudoElementStyle(className, pseudo, style, options) {
   const selector = `.${className}:${pseudo}`;
-  const cssText = style.cssText ? formatCSSText(style) : formatCSSProperties(style, options);
+  const cssText = style.cssText
+    ? formatCSSText(style)
+    : formatCSSProperties(style, options);
   return document.createTextNode(`${selector}{${cssText}}`);
 }
 function clonePseudoElement(nativeNode, clonedNode, pseudo, options) {
@@ -213,7 +228,9 @@ function clonePseudoElement(nativeNode, clonedNode, pseudo, options) {
     return;
   }
   const styleElement = document.createElement("style");
-  styleElement.appendChild(getPseudoElementStyle(className, pseudo, style, options));
+  styleElement.appendChild(
+    getPseudoElementStyle(className, pseudo, style, options),
+  );
   clonedNode.appendChild(styleElement);
 }
 function clonePseudoElements(nativeNode, clonedNode, options) {
@@ -235,7 +252,7 @@ var mimes = {
   gif: "image/gif",
   tiff: "image/tiff",
   svg: "image/svg+xml",
-  webp: "image/webp"
+  webp: "image/webp",
 };
 function getExtension(url) {
   const match = /\.([^./]*?)$/g.exec(url);
@@ -287,21 +304,31 @@ function getCacheKey(url, contentType, includeQueryParams) {
   return contentType ? `[${contentType}]${key}` : key;
 }
 async function resourceToDataURL(resourceUrl, contentType, options) {
-  const cacheKey = getCacheKey(resourceUrl, contentType, options.includeQueryParams);
+  const cacheKey = getCacheKey(
+    resourceUrl,
+    contentType,
+    options.includeQueryParams,
+  );
   if (cache[cacheKey] != null) {
     return cache[cacheKey];
   }
   if (options.cacheBust) {
-    resourceUrl += (/\?/.test(resourceUrl) ? "&" : "?") + (/* @__PURE__ */ new Date()).getTime();
+    resourceUrl +=
+      (/\?/.test(resourceUrl) ? "&" : "?") +
+      /* @__PURE__ */ new Date().getTime();
   }
   let dataURL;
   try {
-    const content = await fetchAsDataURL(resourceUrl, options.fetchRequestInit, ({ res, result }) => {
-      if (!contentType) {
-        contentType = res.headers.get("Content-Type") || "";
-      }
-      return getContentFromDataUrl(result);
-    });
+    const content = await fetchAsDataURL(
+      resourceUrl,
+      options.fetchRequestInit,
+      ({ res, result }) => {
+        if (!contentType) {
+          contentType = res.headers.get("Content-Type") || "";
+        }
+        return getContentFromDataUrl(result);
+      },
+    );
     dataURL = makeDataUrl(content, contentType);
   } catch (error) {
     dataURL = options.imagePlaceholder || "";
@@ -331,7 +358,9 @@ async function cloneVideoElement(video, options) {
     const ctx = canvas.getContext("2d");
     canvas.width = video.clientWidth;
     canvas.height = video.clientHeight;
-    ctx === null || ctx === void 0 ? void 0 : ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx === null || ctx === void 0
+      ? void 0
+      : ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataURL2 = canvas.toDataURL();
     return createImage(dataURL2);
   }
@@ -343,11 +372,17 @@ async function cloneVideoElement(video, options) {
 async function cloneIFrameElement(iframe, options) {
   var _a;
   try {
-    if ((_a = iframe === null || iframe === void 0 ? void 0 : iframe.contentDocument) === null || _a === void 0 ? void 0 : _a.body) {
+    if (
+      (_a =
+        iframe === null || iframe === void 0
+          ? void 0
+          : iframe.contentDocument) === null || _a === void 0
+        ? void 0
+        : _a.body
+    ) {
       return await cloneNode(iframe.contentDocument.body, options, true);
     }
-  } catch (_b) {
-  }
+  } catch (_b) {}
   return iframe.cloneNode(false);
 }
 async function cloneSingleNode(node, options) {
@@ -362,8 +397,10 @@ async function cloneSingleNode(node, options) {
   }
   return node.cloneNode(isSVGElement(node));
 }
-var isSlotElement = (node) => node.tagName != null && node.tagName.toUpperCase() === "SLOT";
-var isSVGElement = (node) => node.tagName != null && node.tagName.toUpperCase() === "SVG";
+var isSlotElement = (node) =>
+  node.tagName != null && node.tagName.toUpperCase() === "SLOT";
+var isSVGElement = (node) =>
+  node.tagName != null && node.tagName.toUpperCase() === "SVG";
 async function cloneChildren(nativeNode, clonedNode, options) {
   var _a, _b;
   if (isSVGElement(clonedNode)) {
@@ -372,19 +409,36 @@ async function cloneChildren(nativeNode, clonedNode, options) {
   let children = [];
   if (isSlotElement(nativeNode) && nativeNode.assignedNodes) {
     children = toArray(nativeNode.assignedNodes());
-  } else if (isInstanceOfElement(nativeNode, HTMLIFrameElement) && ((_a = nativeNode.contentDocument) === null || _a === void 0 ? void 0 : _a.body)) {
+  } else if (
+    isInstanceOfElement(nativeNode, HTMLIFrameElement) &&
+    ((_a = nativeNode.contentDocument) === null || _a === void 0
+      ? void 0
+      : _a.body)
+  ) {
     children = toArray(nativeNode.contentDocument.body.childNodes);
   } else {
-    children = toArray(((_b = nativeNode.shadowRoot) !== null && _b !== void 0 ? _b : nativeNode).childNodes);
+    children = toArray(
+      ((_b = nativeNode.shadowRoot) !== null && _b !== void 0 ? _b : nativeNode)
+        .childNodes,
+    );
   }
-  if (children.length === 0 || isInstanceOfElement(nativeNode, HTMLVideoElement)) {
+  if (
+    children.length === 0 ||
+    isInstanceOfElement(nativeNode, HTMLVideoElement)
+  ) {
     return clonedNode;
   }
-  await children.reduce((deferred, child) => deferred.then(() => cloneNode(child, options)).then((clonedChild) => {
-    if (clonedChild) {
-      clonedNode.appendChild(clonedChild);
-    }
-  }), Promise.resolve());
+  await children.reduce(
+    (deferred, child) =>
+      deferred
+        .then(() => cloneNode(child, options))
+        .then((clonedChild) => {
+          if (clonedChild) {
+            clonedNode.appendChild(clonedChild);
+          }
+        }),
+    Promise.resolve(),
+  );
   return clonedNode;
 }
 function cloneCSSStyle(nativeNode, clonedNode, options) {
@@ -399,13 +453,21 @@ function cloneCSSStyle(nativeNode, clonedNode, options) {
   } else {
     getStyleProperties(options).forEach((name) => {
       let value = sourceStyle.getPropertyValue(name);
-      if (isInstanceOfElement(nativeNode, HTMLIFrameElement) && name === "display" && value === "inline") {
+      if (
+        isInstanceOfElement(nativeNode, HTMLIFrameElement) &&
+        name === "display" &&
+        value === "inline"
+      ) {
         value = "block";
       }
       if (name === "d" && clonedNode.getAttribute("d")) {
         value = `path(${clonedNode.getAttribute("d")})`;
       }
-      targetStyle.setProperty(name, value, sourceStyle.getPropertyPriority(name));
+      targetStyle.setProperty(
+        name,
+        value,
+        sourceStyle.getPropertyPriority(name),
+      );
     });
   }
 }
@@ -420,7 +482,9 @@ function cloneInputValue(nativeNode, clonedNode) {
 function cloneSelectValue(nativeNode, clonedNode) {
   if (isInstanceOfElement(nativeNode, HTMLSelectElement)) {
     const clonedSelect = clonedNode;
-    const selectedOption = Array.from(clonedSelect.children).find((child) => nativeNode.value === child.getAttribute("value"));
+    const selectedOption = Array.from(clonedSelect.children).find(
+      (child) => nativeNode.value === child.getAttribute("value"),
+    );
     if (selectedOption) {
       selectedOption.setAttribute("selected", "");
     }
@@ -475,7 +539,11 @@ async function cloneNode(node, options, isRoot) {
   if (!isRoot && options.filter && !options.filter(node)) {
     return null;
   }
-  return Promise.resolve(node).then((clonedNode) => cloneSingleNode(clonedNode, options)).then((clonedNode) => cloneChildren(node, clonedNode, options)).then((clonedNode) => decorate(node, clonedNode, options)).then((clonedNode) => ensureSVGSymbols(clonedNode, options));
+  return Promise.resolve(node)
+    .then((clonedNode) => cloneSingleNode(clonedNode, options))
+    .then((clonedNode) => cloneChildren(node, clonedNode, options))
+    .then((clonedNode) => decorate(node, clonedNode, options))
+    .then((clonedNode) => ensureSVGSymbols(clonedNode, options));
 }
 
 // node_modules/html-to-image/es/embed-resources.js
@@ -494,9 +562,17 @@ function parseURLs(cssText) {
   });
   return urls.filter((url) => !isDataUrl(url));
 }
-async function embed(cssText, resourceURL, baseURL, options, getContentFromUrl) {
+async function embed(
+  cssText,
+  resourceURL,
+  baseURL,
+  options,
+  getContentFromUrl,
+) {
   try {
-    const resolvedURL = baseURL ? resolveUrl(resourceURL, baseURL) : resourceURL;
+    const resolvedURL = baseURL
+      ? resolveUrl(resourceURL, baseURL)
+      : resourceURL;
     const contentType = getMimeType(resourceURL);
     let dataURL;
     if (getContentFromUrl) {
@@ -506,22 +582,23 @@ async function embed(cssText, resourceURL, baseURL, options, getContentFromUrl) 
       dataURL = await resourceToDataURL(resolvedURL, contentType, options);
     }
     return cssText.replace(toRegex(resourceURL), `$1${dataURL}$3`);
-  } catch (error) {
-  }
+  } catch (error) {}
   return cssText;
 }
 function filterPreferredFontFormat(str, { preferredFontFormat }) {
-  return !preferredFontFormat ? str : str.replace(FONT_SRC_REGEX, (match) => {
-    while (true) {
-      const [src, , format] = URL_WITH_FORMAT_REGEX.exec(match) || [];
-      if (!format) {
-        return "";
-      }
-      if (format === preferredFontFormat) {
-        return `src: ${src};`;
-      }
-    }
-  });
+  return !preferredFontFormat
+    ? str
+    : str.replace(FONT_SRC_REGEX, (match) => {
+        while (true) {
+          const [src, , format] = URL_WITH_FORMAT_REGEX.exec(match) || [];
+          if (!format) {
+            return "";
+          }
+          if (format === preferredFontFormat) {
+            return `src: ${src};`;
+          }
+        }
+      });
 }
 function shouldEmbed(url) {
   return url.search(URL_REGEX) !== -1;
@@ -532,41 +609,63 @@ async function embedResources(cssText, baseUrl, options) {
   }
   const filteredCSSText = filterPreferredFontFormat(cssText, options);
   const urls = parseURLs(filteredCSSText);
-  return urls.reduce((deferred, url) => deferred.then((css) => embed(css, url, baseUrl, options)), Promise.resolve(filteredCSSText));
+  return urls.reduce(
+    (deferred, url) =>
+      deferred.then((css) => embed(css, url, baseUrl, options)),
+    Promise.resolve(filteredCSSText),
+  );
 }
 
 // node_modules/html-to-image/es/embed-images.js
 async function embedProp(propName, node, options) {
   var _a;
-  const propValue = (_a = node.style) === null || _a === void 0 ? void 0 : _a.getPropertyValue(propName);
+  const propValue =
+    (_a = node.style) === null || _a === void 0
+      ? void 0
+      : _a.getPropertyValue(propName);
   if (propValue) {
     const cssString = await embedResources(propValue, null, options);
-    node.style.setProperty(propName, cssString, node.style.getPropertyPriority(propName));
+    node.style.setProperty(
+      propName,
+      cssString,
+      node.style.getPropertyPriority(propName),
+    );
     return true;
   }
   return false;
 }
 async function embedBackground(clonedNode, options) {
-  ;
-  await embedProp("background", clonedNode, options) || await embedProp("background-image", clonedNode, options);
-  await embedProp("mask", clonedNode, options) || await embedProp("-webkit-mask", clonedNode, options) || await embedProp("mask-image", clonedNode, options) || await embedProp("-webkit-mask-image", clonedNode, options);
+  (await embedProp("background", clonedNode, options)) ||
+    (await embedProp("background-image", clonedNode, options));
+  (await embedProp("mask", clonedNode, options)) ||
+    (await embedProp("-webkit-mask", clonedNode, options)) ||
+    (await embedProp("mask-image", clonedNode, options)) ||
+    (await embedProp("-webkit-mask-image", clonedNode, options));
 }
 async function embedImageNode(clonedNode, options) {
   const isImageElement = isInstanceOfElement(clonedNode, HTMLImageElement);
-  if (!(isImageElement && !isDataUrl(clonedNode.src)) && !(isInstanceOfElement(clonedNode, SVGImageElement) && !isDataUrl(clonedNode.href.baseVal))) {
+  if (
+    !(isImageElement && !isDataUrl(clonedNode.src)) &&
+    !(
+      isInstanceOfElement(clonedNode, SVGImageElement) &&
+      !isDataUrl(clonedNode.href.baseVal)
+    )
+  ) {
     return;
   }
   const url = isImageElement ? clonedNode.src : clonedNode.href.baseVal;
   const dataURL = await resourceToDataURL(url, getMimeType(url), options);
   await new Promise((resolve, reject) => {
     clonedNode.onload = resolve;
-    clonedNode.onerror = options.onImageErrorHandler ? (...attributes) => {
-      try {
-        resolve(options.onImageErrorHandler(...attributes));
-      } catch (error) {
-        reject(error);
-      }
-    } : reject;
+    clonedNode.onerror = options.onImageErrorHandler
+      ? (...attributes) => {
+          try {
+            resolve(options.onImageErrorHandler(...attributes));
+          } catch (error) {
+            reject(error);
+          }
+        }
+      : reject;
     const image = clonedNode;
     if (image.decode) {
       image.decode = resolve;
@@ -652,7 +751,10 @@ function parseCSS(source) {
   const result = [];
   const commentsRegex = /(\/\*[\s\S]*?\*\/)/gi;
   let cssText = source.replace(commentsRegex, "");
-  const keyframesRegex = new RegExp("((@.*?keyframes [\\s\\S]*?){([\\s\\S]*?}\\s*?)})", "gi");
+  const keyframesRegex = new RegExp(
+    "((@.*?keyframes [\\s\\S]*?){([\\s\\S]*?}\\s*?)})",
+    "gi",
+  );
   while (true) {
     const matches = keyframesRegex.exec(cssText);
     if (matches === null) {
@@ -662,7 +764,8 @@ function parseCSS(source) {
   }
   cssText = cssText.replace(keyframesRegex, "");
   const importRegex = /@import[\s\S]*?url\([^)]*\)[\s\S]*?;/gi;
-  const combinedCSSRegex = "((\\s*?(?:\\/\\*[\\s\\S]*?\\*\\/)?\\s*?@media[\\s\\S]*?){([\\s\\S]*?)}\\s*?})|(([\\s\\S]*?){([\\s\\S]*?)})";
+  const combinedCSSRegex =
+    "((\\s*?(?:\\/\\*[\\s\\S]*?\\*\\/)?\\s*?@media[\\s\\S]*?){([\\s\\S]*?)}\\s*?})|(([\\s\\S]*?){([\\s\\S]*?)})";
   const unifiedRegex = new RegExp(combinedCSSRegex, "gi");
   while (true) {
     let matches = importRegex.exec(cssText);
@@ -690,29 +793,47 @@ async function getCSSRules(styleSheets, options) {
           if (item.type === CSSRule.IMPORT_RULE) {
             let importIndex = index + 1;
             const url = item.href;
-            const deferred = fetchCSS(url).then((metadata) => embedFonts(metadata, options)).then((cssText) => parseCSS(cssText).forEach((rule) => {
-              try {
-                sheet.insertRule(rule, rule.startsWith("@import") ? importIndex += 1 : sheet.cssRules.length);
-              } catch (error) {
-                console.error("Error inserting rule from remote css", {
-                  rule,
-                  error
-                });
-              }
-            })).catch((e) => {
-              console.error("Error loading remote css", e.toString());
-            });
+            const deferred = fetchCSS(url)
+              .then((metadata) => embedFonts(metadata, options))
+              .then((cssText) =>
+                parseCSS(cssText).forEach((rule) => {
+                  try {
+                    sheet.insertRule(
+                      rule,
+                      rule.startsWith("@import")
+                        ? (importIndex += 1)
+                        : sheet.cssRules.length,
+                    );
+                  } catch (error) {
+                    console.error("Error inserting rule from remote css", {
+                      rule,
+                      error,
+                    });
+                  }
+                }),
+              )
+              .catch((e) => {
+                console.error("Error loading remote css", e.toString());
+              });
             deferreds.push(deferred);
           }
         });
       } catch (e) {
-        const inline = styleSheets.find((a) => a.href == null) || document.styleSheets[0];
+        const inline =
+          styleSheets.find((a) => a.href == null) || document.styleSheets[0];
         if (sheet.href != null) {
-          deferreds.push(fetchCSS(sheet.href).then((metadata) => embedFonts(metadata, options)).then((cssText) => parseCSS(cssText).forEach((rule) => {
-            inline.insertRule(rule, inline.cssRules.length);
-          })).catch((err) => {
-            console.error("Error loading remote stylesheet", err);
-          }));
+          deferreds.push(
+            fetchCSS(sheet.href)
+              .then((metadata) => embedFonts(metadata, options))
+              .then((cssText) =>
+                parseCSS(cssText).forEach((rule) => {
+                  inline.insertRule(rule, inline.cssRules.length);
+                }),
+              )
+              .catch((err) => {
+                console.error("Error loading remote stylesheet", err);
+              }),
+          );
         }
         console.error("Error inlining remote css file", e);
       }
@@ -734,7 +855,9 @@ async function getCSSRules(styleSheets, options) {
   });
 }
 function getWebFontRules(cssRules) {
-  return cssRules.filter((rule) => rule.type === CSSRule.FONT_FACE_RULE).filter((rule) => shouldEmbed(rule.style.getPropertyValue("src")));
+  return cssRules
+    .filter((rule) => rule.type === CSSRule.FONT_FACE_RULE)
+    .filter((rule) => shouldEmbed(rule.style.getPropertyValue("src")));
 }
 async function parseWebFontRules(node, options) {
   if (node.ownerDocument == null) {
@@ -750,7 +873,8 @@ function normalizeFontFamily(font) {
 function getUsedFonts(node) {
   const fonts = /* @__PURE__ */ new Set();
   function traverse(node2) {
-    const fontFamily = node2.style.fontFamily || getComputedStyle(node2).fontFamily;
+    const fontFamily =
+      node2.style.fontFamily || getComputedStyle(node2).fontFamily;
     fontFamily.split(",").forEach((font) => {
       fonts.add(normalizeFontFamily(font));
     });
@@ -766,14 +890,27 @@ function getUsedFonts(node) {
 async function getWebFontCSS(node, options) {
   const rules = await parseWebFontRules(node, options);
   const usedFonts = getUsedFonts(node);
-  const cssTexts = await Promise.all(rules.filter((rule) => usedFonts.has(normalizeFontFamily(rule.style.fontFamily))).map((rule) => {
-    const baseUrl = rule.parentStyleSheet ? rule.parentStyleSheet.href : null;
-    return embedResources(rule.cssText, baseUrl, options);
-  }));
+  const cssTexts = await Promise.all(
+    rules
+      .filter((rule) =>
+        usedFonts.has(normalizeFontFamily(rule.style.fontFamily)),
+      )
+      .map((rule) => {
+        const baseUrl = rule.parentStyleSheet
+          ? rule.parentStyleSheet.href
+          : null;
+        return embedResources(rule.cssText, baseUrl, options);
+      }),
+  );
   return cssTexts.join("\n");
 }
 async function embedWebFonts(clonedNode, options) {
-  const cssText = options.fontEmbedCSS != null ? options.fontEmbedCSS : options.skipFonts ? null : await getWebFontCSS(clonedNode, options);
+  const cssText =
+    options.fontEmbedCSS != null
+      ? options.fontEmbedCSS
+      : options.skipFonts
+        ? null
+        : await getWebFontCSS(clonedNode, options);
   if (cssText) {
     const styleNode = document.createElement("style");
     const sytleContent = document.createTextNode(cssText);
@@ -908,13 +1045,17 @@ function filterFontBlocksForElement(blocks, element) {
   return blocks.filter((block) => {
     const matchingUsages = usages.filter((u) => {
       if (u.family !== block.family) return false;
-      const styleOk = block.style === u.style || block.style === "normal" && u.style === "normal";
+      const styleOk =
+        block.style === u.style ||
+        (block.style === "normal" && u.style === "normal");
       return styleOk && weightMatches(block.weight, u.weight);
     });
     if (matchingUsages.length === 0) return false;
     if (block.unicodeRanges) {
       const hasMatch = matchingUsages.some(
-        (u) => u.text.length > 0 && textMatchesUnicodeRange(u.text, block.unicodeRanges)
+        (u) =>
+          u.text.length > 0 &&
+          textMatchesUnicodeRange(u.text, block.unicodeRanges),
       );
       if (!hasMatch) return false;
     }
@@ -938,9 +1079,7 @@ async function fetchAsDataUrl(url) {
 }
 async function buildFontBlocks() {
   const fontFaceRules = [];
-  const links = Array.from(
-    document.querySelectorAll('link[rel="stylesheet"]')
-  );
+  const links = Array.from(document.querySelectorAll('link[rel="stylesheet"]'));
   for (const link of links) {
     if (!link.href) continue;
     try {
@@ -954,8 +1093,7 @@ async function buildFontBlocks() {
           fontFaceRules.push(rule.cssText);
         }
       }
-    } catch {
-    }
+    } catch {}
   }
   for (const sheet of Array.from(document.styleSheets)) {
     if (sheet.href) continue;
@@ -965,20 +1103,22 @@ async function buildFontBlocks() {
           fontFaceRules.push(rule.cssText);
         }
       }
-    } catch {
-    }
+    } catch {}
   }
   const loadedFamilies = /* @__PURE__ */ new Set();
   if (document.fonts) {
     for (const ff of document.fonts) {
       if (ff.status === "loaded") {
-        loadedFamilies.add(
-          ff.family.replace(/['"]/g, "").trim().toLowerCase()
-        );
+        loadedFamilies.add(ff.family.replace(/['"]/g, "").trim().toLowerCase());
       }
     }
   }
-  const candidates = loadedFamilies.size > 0 ? fontFaceRules.filter((r) => loadedFamilies.has(parseFontFamily(r).toLowerCase())) : fontFaceRules;
+  const candidates =
+    loadedFamilies.size > 0
+      ? fontFaceRules.filter((r) =>
+          loadedFamilies.has(parseFontFamily(r).toLowerCase()),
+        )
+      : fontFaceRules;
   const embedded = await Promise.all(
     candidates.map(async (ruleText) => {
       const urlRegex = /url\(\s*['"]?([^'")\s]+)['"]?\s*\)/g;
@@ -997,9 +1137,9 @@ async function buildFontBlocks() {
         family: parseFontFamily(ruleText).toLowerCase(),
         weight: parseFontWeight(ruleText),
         style: parseFontStyle(ruleText),
-        unicodeRanges: parseUnicodeRange(ruleText)
+        unicodeRanges: parseUnicodeRange(ruleText),
       };
-    })
+    }),
   );
   return embedded;
 }
@@ -1095,7 +1235,12 @@ var HtmlCapture = class {
       return;
     }
     const cached = this.cache.get(element);
-    const cacheIsFresh = !!cached && cached.canvas.width > 0 && cached.canvas.height > 0 && Math.abs(cached.w - w) < 0.5 && Math.abs(cached.h - h) < 0.5;
+    const cacheIsFresh =
+      !!cached &&
+      cached.canvas.width > 0 &&
+      cached.canvas.height > 0 &&
+      Math.abs(cached.w - w) < 0.5 &&
+      Math.abs(cached.h - h) < 0.5;
     if (!force && cacheIsFresh) return;
     if (this._capturing.has(element)) return;
     if (element.tagName === "CANVAS") {
@@ -1153,12 +1298,16 @@ var HtmlCapture = class {
           right: "auto",
           bottom: "auto",
           transform: "none",
-          margin: "0"
-        }
+          margin: "0",
+        },
       });
       return rendered;
     } catch (err) {
-      console.warn("LiquidGlass: captureToCanvas failed for element:", element, err);
+      console.warn(
+        "LiquidGlass: captureToCanvas failed for element:",
+        element,
+        err,
+      );
       return null;
     }
   }
@@ -1185,12 +1334,16 @@ var HtmlCapture = class {
         // Per-element font embed CSS so the captured raster
         // uses the page's actual webfont at the correct weight
         // and unicode subset for this element's text content.
-        fontEmbedCSS: this.fontEmbedCSSForElement(element)
+        fontEmbedCSS: this.fontEmbedCSSForElement(element),
       });
       this.cache.set(element, { canvas: rendered, w, h });
       this.onCacheUpdate?.(element);
     } catch (err) {
-      console.warn("LiquidGlass: html-to-image capture failed for element:", element, err);
+      console.warn(
+        "LiquidGlass: html-to-image capture failed for element:",
+        element,
+        err,
+      );
     }
   }
 };
@@ -1460,7 +1613,7 @@ var GlassRenderer = class {
       alpha: true,
       premultipliedAlpha: false,
       antialias: false,
-      preserveDrawingBuffer: true
+      preserveDrawingBuffer: true,
     });
     if (!gl) {
       throw new Error("LiquidGlass: WebGL is not supported in this browser.");
@@ -1474,7 +1627,9 @@ var GlassRenderer = class {
       console.warn("LiquidGlass: WebGL context lost.");
     };
     this._onContextRestored = () => {
-      console.info("LiquidGlass: WebGL context restored \u2014 reinitialising.");
+      console.info(
+        "LiquidGlass: WebGL context restored \u2014 reinitialising.",
+      );
       this.contextLost = false;
       this._initPrograms();
       this._initBuffers();
@@ -1486,7 +1641,10 @@ var GlassRenderer = class {
       this.bgTex = null;
     };
     this.canvas.addEventListener("webglcontextlost", this._onContextLost);
-    this.canvas.addEventListener("webglcontextrestored", this._onContextRestored);
+    this.canvas.addEventListener(
+      "webglcontextrestored",
+      this._onContextRestored,
+    );
   }
   // ────────────────────────────────────────────
   // Initialisation
@@ -1519,17 +1677,25 @@ var GlassRenderer = class {
       "u_shadowAlpha",
       "u_shadowSpread",
       "u_shadowOffY",
-      "u_bevelMode"
+      "u_bevelMode",
     ]);
   }
   _initBuffers() {
     const gl = this.gl;
     this.quadBuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.quadBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
+      gl.STATIC_DRAW,
+    );
     this.panelBuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.panelBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5]), gl.STATIC_DRAW);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([-0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5]),
+      gl.STATIC_DRAW,
+    );
   }
   // ────────────────────────────────────────────
   // Resize
@@ -1564,7 +1730,14 @@ var GlassRenderer = class {
     }
     gl.bindTexture(gl.TEXTURE_2D, this.bgTex);
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.cropCanvas);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      this.cropCanvas,
+    );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -1657,7 +1830,10 @@ var GlassRenderer = class {
   }
   destroy() {
     this.canvas.removeEventListener("webglcontextlost", this._onContextLost);
-    this.canvas.removeEventListener("webglcontextrestored", this._onContextRestored);
+    this.canvas.removeEventListener(
+      "webglcontextrestored",
+      this._onContextRestored,
+    );
     if (!this.contextLost) {
       const gl = this.gl;
       for (const fboSet of this.fboCache.values()) {
@@ -1690,7 +1866,7 @@ var GlassRenderer = class {
       fboSet = {
         bg: this._makeFBO(w, h),
         blurA: this._makeFBO(w, h),
-        blurB: this._makeFBO(w, h)
+        blurB: this._makeFBO(w, h),
       };
       this.fboCache.set(key, fboSet);
     }
@@ -1701,14 +1877,30 @@ var GlassRenderer = class {
     const gl = this.gl;
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      w,
+      h,
+      0,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      null,
+    );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     const fbo = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    gl.framebufferTexture2D(
+      gl.FRAMEBUFFER,
+      gl.COLOR_ATTACHMENT0,
+      gl.TEXTURE_2D,
+      tex,
+      0,
+    );
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     return { fbo, tex, w, h };
   }
@@ -1732,7 +1924,11 @@ var GlassRenderer = class {
     gl.shaderSource(s, src);
     gl.compileShader(s);
     if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
-      console.error("LiquidGlass shader compile error:", gl.getShaderInfoLog(s), src);
+      console.error(
+        "LiquidGlass shader compile error:",
+        gl.getShaderInfoLog(s),
+        src,
+      );
       return null;
     }
     return s;
@@ -1834,7 +2030,7 @@ var LiquidGlass = class _LiquidGlass {
       startX: 0,
       startY: 0,
       origTx: 0,
-      origTy: 0
+      origTy: 0,
     };
     if (!root) throw new Error("LiquidGlass: `root` element is required.");
     this.root = root;
@@ -1890,7 +2086,10 @@ var LiquidGlass = class _LiquidGlass {
     this._glassSubtreeObserver = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         const owner = this._closestGlassAncestor(mutation.target);
-        if (mutation.type === "attributes" && mutation.attributeName === "data-config") {
+        if (
+          mutation.type === "attributes" &&
+          mutation.attributeName === "data-config"
+        ) {
           if (owner) this._markGlassAndDependents(owner);
           continue;
         }
@@ -1906,7 +2105,7 @@ var LiquidGlass = class _LiquidGlass {
         subtree: true,
         characterData: true,
         attributes: true,
-        attributeFilter: ["data-config"]
+        attributeFilter: ["data-config"],
       });
     }
     this._glassContentDirty.clear();
@@ -1954,7 +2153,10 @@ var LiquidGlass = class _LiquidGlass {
     let needsButtonStyles = false;
     for (const el of this.glassSet) {
       if (el.parentElement !== this.root) {
-        console.warn("LiquidGlass: glass element must be a direct child of root, skipping.", el);
+        console.warn(
+          "LiquidGlass: glass element must be a direct child of root, skipping.",
+          el,
+        );
         this.glassSet.delete(el);
         continue;
       }
@@ -1973,7 +2175,8 @@ var LiquidGlass = class _LiquidGlass {
         this._setupButtonListeners(el);
       }
       const canvas = document.createElement("canvas");
-      canvas.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;";
+      canvas.style.cssText =
+        "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;";
       el.insertBefore(canvas, el.firstChild);
       this.glassCanvases.set(el, canvas);
     }
@@ -2023,7 +2226,7 @@ var LiquidGlass = class _LiquidGlass {
       elementDOMRect,
       rootRect,
       dpr,
-      this.glassSet.has(element) ? SHADOW_PAD : 0
+      this.glassSet.has(element) ? SHADOW_PAD : 0,
     );
     let seenElement = false;
     for (const child of this._sortedChildren) {
@@ -2037,7 +2240,7 @@ var LiquidGlass = class _LiquidGlass {
         child.getBoundingClientRect(),
         rootRect,
         dpr,
-        SHADOW_PAD
+        SHADOW_PAD,
       );
       if (_LiquidGlass._rectsIntersect(elementBox, sampleRect)) {
         this._glassDirty.add(child);
@@ -2059,14 +2262,14 @@ var LiquidGlass = class _LiquidGlass {
       element.getBoundingClientRect(),
       rootRect,
       dpr,
-      this.glassSet.has(element) ? SHADOW_PAD : 0
+      this.glassSet.has(element) ? SHADOW_PAD : 0,
     );
     for (const glass of this.glassSet) {
       const sampleRect = this._getPixelRect(
         glass.getBoundingClientRect(),
         rootRect,
         dpr,
-        SHADOW_PAD
+        SHADOW_PAD,
       );
       if (_LiquidGlass._rectsIntersect(elementBox, sampleRect)) {
         this._glassDirty.add(glass);
@@ -2127,7 +2330,7 @@ var LiquidGlass = class _LiquidGlass {
       () => el.removeEventListener("pointerout", onOut),
       () => el.removeEventListener("pointerdown", onDown),
       () => el.removeEventListener("pointerup", onUp),
-      () => el.removeEventListener("pointercancel", onUp)
+      () => el.removeEventListener("pointercancel", onUp),
     ]);
   }
   // ────────────────────────────────────────────
@@ -2156,7 +2359,7 @@ var LiquidGlass = class _LiquidGlass {
           el,
           rect.width,
           rect.height,
-          [glassCanvas]
+          [glassCanvas],
         );
         if (img) {
           this._glassContentImages.set(el, img);
@@ -2192,10 +2395,17 @@ var LiquidGlass = class _LiquidGlass {
   _getSortedChildren() {
     const children = Array.from(this.root.children);
     const rootDisplay = window.getComputedStyle(this.root).display;
-    const isFlexOrGridParent = rootDisplay === "flex" || rootDisplay === "inline-flex" || rootDisplay === "grid" || rootDisplay === "inline-grid";
+    const isFlexOrGridParent =
+      rootDisplay === "flex" ||
+      rootDisplay === "inline-flex" ||
+      rootDisplay === "grid" ||
+      rootDisplay === "inline-grid";
     const tagged = children.map((el, domIndex) => {
       const style = window.getComputedStyle(el);
-      const hasStackingContext = _LiquidGlass._formsStackingContext(style, isFlexOrGridParent);
+      const hasStackingContext = _LiquidGlass._formsStackingContext(
+        style,
+        isFlexOrGridParent,
+      );
       const rawZ = parseInt(style.zIndex, 10);
       const zIndex = isNaN(rawZ) ? 0 : rawZ;
       return { el, domIndex, hasStackingContext, zIndex };
@@ -2228,14 +2438,16 @@ var LiquidGlass = class _LiquidGlass {
     if (style.filter !== "none" && style.filter !== "") return true;
     if (style.perspective !== "none" && style.perspective !== "") return true;
     if (style.clipPath !== "none" && style.clipPath !== "") return true;
-    if (style.mixBlendMode !== "normal" && style.mixBlendMode !== "") return true;
+    if (style.mixBlendMode !== "normal" && style.mixBlendMode !== "")
+      return true;
     if (style.isolation === "isolate") return true;
     const bf = style.backdropFilter || style.webkitBackdropFilter;
     if (bf && bf !== "none") return true;
     const mask = style.maskImage || style.webkitMaskImage;
     if (mask && mask !== "none") return true;
     const contain = style.contain;
-    if (contain && /\b(layout|paint|strict|content)\b/.test(contain)) return true;
+    if (contain && /\b(layout|paint|strict|content)\b/.test(contain))
+      return true;
     if (style.willChange) {
       const triggers = /* @__PURE__ */ new Set([
         "transform",
@@ -2247,7 +2459,7 @@ var LiquidGlass = class _LiquidGlass {
         "mask",
         "mask-image",
         "isolation",
-        "mix-blend-mode"
+        "mix-blend-mode",
       ]);
       const tokens = style.willChange.split(",").map((t) => t.trim());
       for (const t of tokens) {
@@ -2285,16 +2497,22 @@ var LiquidGlass = class _LiquidGlass {
           if (parsed && typeof parsed === "object") {
             perElement = parsed;
           } else {
-            console.warn("LiquidGlass: data-config must decode to an object for element:", el);
+            console.warn(
+              "LiquidGlass: data-config must decode to an object for element:",
+              el,
+            );
           }
         } catch (_e) {
-          console.warn("LiquidGlass: invalid JSON in data-config for element:", el);
+          console.warn(
+            "LiquidGlass: invalid JSON in data-config for element:",
+            el,
+          );
         }
       }
       cachedEl.configCache = perElement;
       cachedEl.configCacheKey = configKey;
     }
-    const config = { ...this.defaults, ...cachedEl.configCache || {} };
+    const config = { ...this.defaults, ...(cachedEl.configCache || {}) };
     if (config.button) {
       const state = this._buttonStates.get(el);
       if (state) {
@@ -2315,7 +2533,10 @@ var LiquidGlass = class _LiquidGlass {
     const dpr = window.devicePixelRatio || 1;
     const rect = this.root.getBoundingClientRect();
     this.capture.resize(dpr);
-    this.renderer.resize(Math.round(rect.width * dpr), Math.round(rect.height * dpr));
+    this.renderer.resize(
+      Math.round(rect.width * dpr),
+      Math.round(rect.height * dpr),
+    );
     for (const el of this.glassSet) {
       this._updateGlassCanvasSize(el);
     }
@@ -2333,15 +2554,16 @@ var LiquidGlass = class _LiquidGlass {
     const padH = SHADOW_PAD * 2;
     canvas.width = Math.round((elW + padW) * dpr);
     canvas.height = Math.round((elH + padH) * dpr);
-    canvas.style.cssText = [
-      "position:absolute",
-      `left:${-SHADOW_PAD}px`,
-      `top:${-SHADOW_PAD}px`,
-      `width:${elW + padW}px`,
-      `height:${elH + padH}px`,
-      "pointer-events:none",
-      "z-index:-1"
-    ].join(";") + ";";
+    canvas.style.cssText =
+      [
+        "position:absolute",
+        `left:${-SHADOW_PAD}px`,
+        `top:${-SHADOW_PAD}px`,
+        `width:${elW + padW}px`,
+        `height:${elH + padH}px`,
+        "pointer-events:none",
+        "z-index:-1",
+      ].join(";") + ";";
     this._glassLastSize.set(el, { w: elW, h: elH });
   }
   _checkGlassSizeChanges() {
@@ -2386,7 +2608,12 @@ var LiquidGlass = class _LiquidGlass {
       const elH = el.offsetHeight;
       const visualLeft = rect.left + (rect.width - elW) / 2;
       const visualTop = rect.top + (rect.height - elH) / 2;
-      if (e.clientX >= visualLeft && e.clientX <= visualLeft + elW && e.clientY >= visualTop && e.clientY <= visualTop + elH) {
+      if (
+        e.clientX >= visualLeft &&
+        e.clientX <= visualLeft + elW &&
+        e.clientY >= visualTop &&
+        e.clientY <= visualTop + elH
+      ) {
         const [tx, ty] = _LiquidGlass._getTranslateXY(el);
         this._drag.active = true;
         this._drag.element = el;
@@ -2411,7 +2638,12 @@ var LiquidGlass = class _LiquidGlass {
         const elH2 = el2.offsetHeight;
         const visualLeft = rect.left + (rect.width - elW2) / 2;
         const visualTop = rect.top + (rect.height - elH2) / 2;
-        if (e.clientX >= visualLeft && e.clientX <= visualLeft + elW2 && e.clientY >= visualTop && e.clientY <= visualTop + elH2) {
+        if (
+          e.clientX >= visualLeft &&
+          e.clientX <= visualLeft + elW2 &&
+          e.clientY >= visualTop &&
+          e.clientY <= visualTop + elH2
+        ) {
           el2.style.cursor = "grab";
         } else {
           el2.style.cursor = "";
@@ -2429,8 +2661,10 @@ var LiquidGlass = class _LiquidGlass {
     const elH = el.offsetHeight;
     const elRect = el.getBoundingClientRect();
     const [curTx, curTy] = _LiquidGlass._getTranslateXY(el);
-    const baseLeft = elRect.left + (elRect.width - elW) / 2 - rootRect.left - curTx;
-    const baseTop = elRect.top + (elRect.height - elH) / 2 - rootRect.top - curTy;
+    const baseLeft =
+      elRect.left + (elRect.width - elW) / 2 - rootRect.left - curTx;
+    const baseTop =
+      elRect.top + (elRect.height - elH) / 2 - rootRect.top - curTy;
     const margin = 10;
     const posLeft = baseLeft + newTx;
     const posTop = baseTop + newTy;
@@ -2493,7 +2727,8 @@ var LiquidGlass = class _LiquidGlass {
       for (const el of this.glassSet) this._glassDirty.add(el);
       this._globalDirty = false;
     }
-    const needsRender = this._glassDirty.size > 0 || this._hasDynamic || isDragging;
+    const needsRender =
+      this._glassDirty.size > 0 || this._hasDynamic || isDragging;
     if (!needsRender) return;
     const dirtyTargets = new Set(this._glassDirty);
     this._glassDirty.clear();
@@ -2506,7 +2741,7 @@ var LiquidGlass = class _LiquidGlass {
         dpr,
         isDragging,
         dirtyTargets,
-        renderedThisFrame
+        renderedThisFrame,
       );
     }
   }
@@ -2526,7 +2761,14 @@ var LiquidGlass = class _LiquidGlass {
    * On render, an entry is pushed to `renderedThisFrame` so later
    * glasses can check whether they need to refresh too.
    */
-  _renderGlassElement(child, rootRect, dpr, isDragging, dirtyTargets, renderedThisFrame) {
+  _renderGlassElement(
+    child,
+    rootRect,
+    dpr,
+    isDragging,
+    dirtyTargets,
+    renderedThisFrame,
+  ) {
     const config = this._getConfig(child);
     const elRect = child.getBoundingClientRect();
     const elW = child.offsetWidth;
@@ -2537,8 +2779,13 @@ var LiquidGlass = class _LiquidGlass {
     const isBeingDragged = isDragging && this._drag.element === child;
     const sampleRect = this._getPixelRect(elRect, rootRect, dpr, SHADOW_PAD);
     const cached = this._glassCache.get(child);
-    const posChanged = !cached || Math.abs(cached.centerX - centerX) > 0.5 || Math.abs(cached.centerY - centerY) > 0.5;
-    const hasDynamicContributors = this._hasDynamic && this._glassHasDynamicContributors(child, sampleRect, rootRect, dpr);
+    const posChanged =
+      !cached ||
+      Math.abs(cached.centerX - centerX) > 0.5 ||
+      Math.abs(cached.centerY - centerY) > 0.5;
+    const hasDynamicContributors =
+      this._hasDynamic &&
+      this._glassHasDynamicContributors(child, sampleRect, rootRect, dpr);
     let priorGlassChanged = false;
     for (const r of renderedThisFrame) {
       if (_LiquidGlass._rectsIntersect(r.rect, sampleRect)) {
@@ -2547,7 +2794,16 @@ var LiquidGlass = class _LiquidGlass {
       }
     }
     const isExplicitlyDirty = dirtyTargets.has(child);
-    const needsShaderRender = isDragging ? isBeingDragged || isExplicitlyDirty || priorGlassChanged || hasDynamicContributors : !cached || posChanged || isExplicitlyDirty || priorGlassChanged || hasDynamicContributors;
+    const needsShaderRender = isDragging
+      ? isBeingDragged ||
+        isExplicitlyDirty ||
+        priorGlassChanged ||
+        hasDynamicContributors
+      : !cached ||
+        posChanged ||
+        isExplicitlyDirty ||
+        priorGlassChanged ||
+        hasDynamicContributors;
     if (needsShaderRender && glassCanvas) {
       const renderW = glassCanvas.width;
       const renderH = glassCanvas.height;
@@ -2558,15 +2814,10 @@ var LiquidGlass = class _LiquidGlass {
         0,
         renderW,
         renderH,
-        config.blurAmount
+        config.blurAmount,
       );
       this.renderer.clear();
-      this.renderer.renderGlassPanel(
-        config,
-        elW,
-        elH,
-        dpr
-      );
+      this.renderer.renderGlassPanel(config, elW, elH, dpr);
       const ctx = glassCanvas.getContext("2d");
       ctx.clearRect(0, 0, glassCanvas.width, glassCanvas.height);
       ctx.drawImage(
@@ -2578,7 +2829,7 @@ var LiquidGlass = class _LiquidGlass {
         0,
         0,
         glassCanvas.width,
-        glassCanvas.height
+        glassCanvas.height,
       );
       this._glassCache.set(child, { centerX, centerY });
       renderedThisFrame.push({ rect: sampleRect });
@@ -2600,7 +2851,10 @@ var LiquidGlass = class _LiquidGlass {
     }
   }
   _prepareSceneCanvas(width, height) {
-    if (this._sceneCanvas.width !== width || this._sceneCanvas.height !== height) {
+    if (
+      this._sceneCanvas.width !== width ||
+      this._sceneCanvas.height !== height
+    ) {
       this._sceneCanvas.width = width;
       this._sceneCanvas.height = height;
     } else {
@@ -2635,17 +2889,27 @@ var LiquidGlass = class _LiquidGlass {
     if (!this._elementTouchesSample(child, sampleRect, rootRect, dpr)) {
       return;
     }
-    this._captureMediaDescendants(child, this._sceneCtx, sampleRect, rootRect, dpr);
+    this._captureMediaDescendants(
+      child,
+      this._sceneCtx,
+      sampleRect,
+      rootRect,
+      dpr,
+    );
     const isDynamic = child.hasAttribute("data-dynamic");
     this.capture.captureElement(child, isDynamic);
-    const rect = this._getPixelRect(child.getBoundingClientRect(), rootRect, dpr);
+    const rect = this._getPixelRect(
+      child.getBoundingClientRect(),
+      rootRect,
+      dpr,
+    );
     this.capture.drawCachedElement(
       child,
       this._sceneCtx,
       rect.x - sampleRect.x,
       rect.y - sampleRect.y,
       rect.w,
-      rect.h
+      rect.h,
     );
   }
   /**
@@ -2671,7 +2935,8 @@ var LiquidGlass = class _LiquidGlass {
   _drawMediaElement(el, targetCtx, sampleRect, rootRect, dpr) {
     const tag = el.tagName;
     const r = el.getBoundingClientRect();
-    if (!this._elementTouchesSample(el, sampleRect, rootRect, dpr)) return false;
+    if (!this._elementTouchesSample(el, sampleRect, rootRect, dpr))
+      return false;
     const rect = this._getPixelRect(r, rootRect, dpr);
     const dx = rect.x - sampleRect.x;
     const dy = rect.y - sampleRect.y;
@@ -2696,7 +2961,7 @@ var LiquidGlass = class _LiquidGlass {
         dx,
         dy,
         dw,
-        dh
+        dh,
       );
       return true;
     } else if (tag === "VIDEO") {
@@ -2713,7 +2978,7 @@ var LiquidGlass = class _LiquidGlass {
           dx,
           dy,
           dw,
-          dh
+          dh,
         );
       } catch {
         return false;
@@ -2728,8 +2993,25 @@ var LiquidGlass = class _LiquidGlass {
       const computed = getComputedStyle(child);
       const fit = computed.objectFit || "fill";
       const pos = computed.objectPosition || "50% 50%";
-      const src = _LiquidGlass._objectFitRect(natW, natH, r.width, r.height, fit, pos);
-      targetCtx.drawImage(mediaEl, src.sx, src.sy, src.sw, src.sh, dx, dy, dw, dh);
+      const src = _LiquidGlass._objectFitRect(
+        natW,
+        natH,
+        r.width,
+        r.height,
+        fit,
+        pos,
+      );
+      targetCtx.drawImage(
+        mediaEl,
+        src.sx,
+        src.sy,
+        src.sw,
+        src.sh,
+        dx,
+        dy,
+        dw,
+        dh,
+      );
     } else {
       targetCtx.drawImage(mediaEl, dx, dy, dw, dh);
     }
@@ -2749,7 +3031,7 @@ var LiquidGlass = class _LiquidGlass {
           shaderRect.x - sampleRect.x,
           shaderRect.y - sampleRect.y,
           shaderRect.w,
-          shaderRect.h
+          shaderRect.h,
         );
       }
     }
@@ -2762,7 +3044,7 @@ var LiquidGlass = class _LiquidGlass {
       contentRect.x - sampleRect.x,
       contentRect.y - sampleRect.y,
       contentRect.w,
-      contentRect.h
+      contentRect.h,
     );
   }
   _getPixelRect(rect, rootRect, dpr, pad = 0) {
@@ -2770,11 +3052,12 @@ var LiquidGlass = class _LiquidGlass {
       x: Math.round((rect.left - rootRect.left - pad) * dpr),
       y: Math.round((rect.top - rootRect.top - pad) * dpr),
       w: Math.round((rect.width + pad * 2) * dpr),
-      h: Math.round((rect.height + pad * 2) * dpr)
+      h: Math.round((rect.height + pad * 2) * dpr),
     };
   }
   _childTouchesSample(child, sampleRect, rootRect, dpr) {
-    if (this._elementTouchesSample(child, sampleRect, rootRect, dpr)) return true;
+    if (this._elementTouchesSample(child, sampleRect, rootRect, dpr))
+      return true;
     for (const el of child.querySelectorAll("[data-dynamic], video")) {
       if (this._elementTouchesSample(el, sampleRect, rootRect, dpr)) {
         return true;
@@ -2784,7 +3067,12 @@ var LiquidGlass = class _LiquidGlass {
   }
   _elementTouchesSample(element, sampleRect, rootRect, dpr) {
     const pad = this._getPaintOverflowPad(element);
-    const bounds = this._getPixelRect(element.getBoundingClientRect(), rootRect, dpr, pad);
+    const bounds = this._getPixelRect(
+      element.getBoundingClientRect(),
+      rootRect,
+      dpr,
+      pad,
+    );
     return _LiquidGlass._rectsIntersect(bounds, sampleRect);
   }
   _getPaintOverflowPad(element) {
@@ -2792,16 +3080,30 @@ var LiquidGlass = class _LiquidGlass {
     const style = getComputedStyle(element);
     const backdropFilter = style.backdropFilter || style.webkitBackdropFilter;
     const maskImage = style.maskImage || style.webkitMaskImage;
-    const paintsOutsideBounds = style.boxShadow && style.boxShadow !== "none" || style.textShadow && style.textShadow !== "none" || style.filter && style.filter !== "none" || backdropFilter && backdropFilter !== "none" || maskImage && maskImage !== "none" || style.mixBlendMode && style.mixBlendMode !== "normal";
+    const paintsOutsideBounds =
+      (style.boxShadow && style.boxShadow !== "none") ||
+      (style.textShadow && style.textShadow !== "none") ||
+      (style.filter && style.filter !== "none") ||
+      (backdropFilter && backdropFilter !== "none") ||
+      (maskImage && maskImage !== "none") ||
+      (style.mixBlendMode && style.mixBlendMode !== "normal");
     return paintsOutsideBounds ? SHADOW_PAD : 0;
   }
   static _rectsIntersect(a, b) {
-    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+    return (
+      a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
+    );
   }
   /** Compute the source rectangle for drawImage that replicates CSS object-fit / object-position. */
   static _objectFitRect(natW, natH, boxW, boxH, fit, pos) {
-    let sx = 0, sy = 0, sw = natW, sh = natH;
-    if (fit === "fill" || fit === "scale-down" && natW <= boxW && natH <= boxH) {
+    let sx = 0,
+      sy = 0,
+      sw = natW,
+      sh = natH;
+    if (
+      fit === "fill" ||
+      (fit === "scale-down" && natW <= boxW && natH <= boxH)
+    ) {
       return { sx, sy, sw, sh };
     }
     const parts = pos.split(/\s+/);
@@ -2832,8 +3134,4 @@ var LiquidGlass = class _LiquidGlass {
     return { sx, sy, sw, sh };
   }
 };
-export {
-  DEFAULTS,
-  LiquidGlass,
-  invalidateFontEmbedCache
-};
+export { DEFAULTS, LiquidGlass, invalidateFontEmbedCache };

@@ -16,8 +16,7 @@ import { CaptionsIcon } from "./player/captions-icon";
 import { CenterControls } from "./player/center-controls";
 import { ControlButton } from "./player/control-button";
 import { useGlassControls } from "./player/glass-controls";
-import { useHasHover, useIsMdUp, useTriggerRect } from "./player/hooks";
-import { useLiquidGlass } from "./player/liquid-glass";
+import { useHasHover, useTriggerRect } from "./player/hooks";
 import { LoadingSkeleton } from "./player/loading-skeleton";
 import { PlayPauseIcon } from "./player/play-pause-icon";
 import { SeekBar } from "./player/seek-bar";
@@ -88,21 +87,13 @@ export function LoomixPlayer({
   const volumeCloseTimerRef = React.useRef<number | null>(null);
 
   const hasHover = useHasHover();
-  const isMdUp = useIsMdUp();
 
-  // Sizes must match the buttons' Tailwind classes (h-16/md:h-[88px] and
-  // h-12/md:h-[66px]) because a backdrop-filter displacement map doesn't
-  // scale with the element.
-  const playGlass = useLiquidGlass(isMdUp ? 88 : 64);
-  const skipGlass = useLiquidGlass(isMdUp ? 66 : 48);
-  // WebGL liquid glass under the centre buttons, with the SVG filters above as
-  // the fallback until it runs (and for good where it cannot).
+  // WebGL liquid glass under the center buttons. The cluster stays hidden
+  // until the shader is running, and for good where it cannot run.
   const glass = useGlassControls(
     { root: containerRef, video: videoRef, layer: centerLayerRef },
     [src, disableSkip, loading],
   );
-  const reactId = React.useId();
-  const glassFilterId = `loomix-glass-${reactId.replace(/[^a-zA-Z0-9_-]/g, "")}`;
   const [portalMounted, setPortalMounted] = React.useState(false);
   React.useEffect(() => setPortalMounted(true), []);
 
@@ -468,6 +459,7 @@ export function LoomixPlayer({
       tabIndex={0}
       role="region"
       aria-label={ariaLabel ?? "Video player"}
+      data-glass={glass}
       onKeyDown={onKeyDown}
       onPointerMove={revealControls}
       onPointerLeave={() => {
@@ -530,12 +522,8 @@ export function LoomixPlayer({
         visible={centerControlsVisible}
         isPlaying={isPlaying}
         disableSkip={disableSkip}
-        isMdUp={isMdUp}
         glass={glass}
         layerRef={centerLayerRef}
-        glassFilterId={glassFilterId}
-        playGlass={playGlass}
-        skipGlass={skipGlass}
         onTogglePlay={togglePlay}
         onSeekBy={seekBy}
       />

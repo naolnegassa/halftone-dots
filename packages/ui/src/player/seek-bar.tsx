@@ -85,7 +85,7 @@ export function SeekBar({
             left: `${hoverPercent * 100}%`,
             bottom: "calc(100% + 8px)",
           }}
-          // Centred on the pointer, the label runs past the track at either
+          // Centered on the pointer, the label runs past the track at either
           // end and the player's frame clips it. Clamp it to the track once
           // its width is known; the ref runs after each render's styles.
           ref={(el) => {
