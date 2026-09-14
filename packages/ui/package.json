@@ -1,6 +1,6 @@
 {
   "name": "loomix",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A drop-in replacement for the native HTML5 video element, with a beautifully customizable UI.",
   "keywords": [
     "react",
@@ -22,7 +22,11 @@
   },
   "bugs": "https://github.com/haaarshsingh/loomix/issues",
   "license": "Apache-2.0",
-  "author": "Harsh Singh (https://harshsingh.me)",
+  "author": {
+    "name": "Harsh Singh",
+    "email": "h@harshsingh.me",
+    "url": "https://www.harshsingh.me"
+  },
   "type": "module",
   "sideEffects": false,
   "main": "./dist/index.cjs",
